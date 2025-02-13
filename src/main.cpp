@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QPdfDocument>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QVideoSink>
@@ -90,15 +91,42 @@ private:
   int currentPage;
 };
 
+class LargeList : public QWidget {
+public:
+  LargeList(QWidget *parent = nullptr) : QWidget(parent) {
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QScrollArea *scrollArea = new QScrollArea(this);
+    QWidget *listWidget = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(listWidget);
+
+    QFont font;
+    font.setPointSize(30);
+    for (int i = 0; i < 1000; ++i) {
+      QLabel *label = new QLabel(QString("Item %1").arg(i), this);
+      label->setFont(font);
+      label->setFixedHeight(100);
+      layout->addWidget(label);
+    }
+
+    listWidget->setLayout(layout);
+    scrollArea->setWidget(listWidget);
+    scrollArea->setWidgetResizable(true);
+    mainLayout->addWidget(scrollArea);
+    setLayout(mainLayout);
+  }
+};
+
 class MainWindow : public QMainWindow {
 public:
   MainWindow() {
     setWindowTitle("Qt C++ Multimedia App");
     // should be fullscreen
     setWindowState(Qt::WindowMaximized);
+    QFont tabFont;
+    tabFont.setPointSize(20);
 
     QTabWidget *tabs = new QTabWidget(this);
-    tabs->addTab(new VideoPlayer(), "Video Player");
+    tabs->setFont(tabFont);
     tabs->addTab(new WebView(), "Web Browser");
     // first check if sample.pdf exists in current directory, then try
     // /home/root
@@ -106,6 +134,9 @@ public:
       tabs->addTab(new PdfViewer("sample.pdf"), "PDF Viewer");
     else
       tabs->addTab(new PdfViewer("/home/root/sample.pdf"), "PDF Viewer");
+
+    tabs->addTab(new LargeList(), "Large List");
+    tabs->addTab(new VideoPlayer(), "Video Player");
 
     setCentralWidget(tabs);
   }
