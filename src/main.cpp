@@ -10,6 +10,7 @@
 #include <QPdfDocument>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QScroller>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QVideoSink>
@@ -113,6 +114,7 @@ public:
     scrollArea->setWidgetResizable(true);
     mainLayout->addWidget(scrollArea);
     setLayout(mainLayout);
+    QScroller::grabGesture(scrollArea->viewport(), QScroller::TouchGesture);
   }
 };
 
