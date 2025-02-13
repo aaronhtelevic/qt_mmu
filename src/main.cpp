@@ -21,7 +21,7 @@ public:
     setLayout(layout);
 
     QWebEngineView *webView = new QWebEngineView(this);
-    webView->setUrl(QUrl("https://www.qt.io"));
+    webView->setUrl(QUrl("http://localhost:8085"));
     layout->addWidget(webView);
   }
 };
