@@ -1,4 +1,6 @@
+#include "video_player.hpp"
 #include <QApplication>
+#include <QFile>
 #include <QHBoxLayout>
 #include <QImage>
 #include <QLabel>
@@ -10,32 +12,7 @@
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QVideoSink>
-// #include <QVideoWidget>
 #include <QWebEngineView>
-
-// class VideoPlayer : public QWidget {
-// public:
-//   VideoPlayer(QWidget *parent = nullptr) : QWidget(parent) {
-//     QVBoxLayout *layout = new QVBoxLayout(this);
-//     setLayout(layout);
-//
-//     videoWidget = new QVideoWidget(this);
-//     layout->addWidget(videoWidget);
-//
-//     player = new QMediaPlayer(this);
-//     videoSink = new QVideoSink(this);
-//     player->setVideoSink(videoSink);
-//     videoWidget->setVideoSink(videoSink);
-//
-//     player->setSource(QUrl::fromLocalFile("/home/aaron/video1.mp4"));
-//     player->play();
-//   }
-//
-// private:
-//   QMediaPlayer *player;
-//   QVideoSink *videoSink;
-//   QVideoWidget *videoWidget;
-// };
 
 class WebView : public QWidget {
 public:
@@ -117,12 +94,18 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow() {
     setWindowTitle("Qt C++ Multimedia App");
-    resize(800, 600);
+    // should be fullscreen
+    setWindowState(Qt::WindowMaximized);
 
     QTabWidget *tabs = new QTabWidget(this);
-    // tabs->addTab(new VideoPlayer(), "Video Player");
+    tabs->addTab(new VideoPlayer(), "Video Player");
     tabs->addTab(new WebView(), "Web Browser");
-    tabs->addTab(new PdfViewer("/home/root/sample.pdf"), "PDF Viewer");
+    // first check if sample.pdf exists in current directory, then try
+    // /home/root
+    if (QFile::exists("sample.pdf"))
+      tabs->addTab(new PdfViewer("sample.pdf"), "PDF Viewer");
+    else
+      tabs->addTab(new PdfViewer("/home/root/sample.pdf"), "PDF Viewer");
 
     setCentralWidget(tabs);
   }
