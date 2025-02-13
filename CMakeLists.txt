@@ -32,3 +32,7 @@ target_link_libraries(QtMultimediaApp PRIVATE
     Qt6::Multimedia
     Qt6::MultimediaWidgets
 )
+
+install(TARGETS QtMultimediaApp
+    RUNTIME DESTINATION bin
+)
