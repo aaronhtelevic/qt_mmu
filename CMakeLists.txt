@@ -25,6 +25,9 @@ set(SOURCES
 add_executable(QtMultimediaApp ${HEADERS} ${SOURCES})
 include_directories(include)
 
+qt_add_resources(RESOURCES resources.qrc)
+target_sources(QtMultimediaApp PRIVATE ${RESOURCES})
+
 target_link_libraries(QtMultimediaApp PRIVATE
     Qt6::Widgets
     Qt6::WebEngineWidgets

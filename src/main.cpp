@@ -31,7 +31,7 @@ public:
 class PdfViewer : public QWidget {
 public:
   PdfViewer(const QString &pdfPath, QWidget *parent = nullptr)
-      : QWidget(parent), currentPage(0) {
+      : QWidget(parent), currentPage(0), zoomFactor(1.0) {
     QVBoxLayout *layout = new QVBoxLayout(this);
     setLayout(layout);
 
@@ -44,11 +44,19 @@ public:
     QHBoxLayout *navLayout = new QHBoxLayout();
     prevButton = new QPushButton("Previous", this);
     nextButton = new QPushButton("Next", this);
+    zoomInButton = new QPushButton("Zoom In", this);
+    zoomOutButton = new QPushButton("Zoom Out", this);
+
     connect(prevButton, &QPushButton::clicked, this,
             &PdfViewer::showPreviousPage);
     connect(nextButton, &QPushButton::clicked, this, &PdfViewer::showNextPage);
+    connect(zoomInButton, &QPushButton::clicked, this, &PdfViewer::zoomIn);
+    connect(zoomOutButton, &QPushButton::clicked, this, &PdfViewer::zoomOut);
+
     navLayout->addWidget(prevButton);
     navLayout->addWidget(nextButton);
+    navLayout->addWidget(zoomInButton);
+    navLayout->addWidget(zoomOutButton);
 
     layout->addLayout(navLayout);
 
@@ -73,10 +81,21 @@ private slots:
     }
   }
 
+  void zoomIn() {
+    zoomFactor *= 1.2;
+    updatePage();
+  }
+
+  void zoomOut() {
+    zoomFactor /= 1.2;
+    updatePage();
+  }
+
 private:
   void updatePage() {
-    QImage image = pdfDocument->render(
-        currentPage, pdfDocument->pagePointSize(currentPage).toSize());
+    QSize originalSize = pdfDocument->pagePointSize(currentPage).toSize();
+    QSize scaledSize = originalSize * zoomFactor;
+    QImage image = pdfDocument->render(currentPage, scaledSize);
     pdfLabel->setPixmap(QPixmap::fromImage(image));
   }
 
@@ -89,7 +108,10 @@ private:
   QLabel *pdfLabel;
   QPushButton *prevButton;
   QPushButton *nextButton;
+  QPushButton *zoomInButton;
+  QPushButton *zoomOutButton;
   int currentPage;
+  double zoomFactor;
 };
 
 class LargeList : public QWidget {
@@ -98,22 +120,57 @@ public:
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QScrollArea *scrollArea = new QScrollArea(this);
     QWidget *listWidget = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(listWidget);
+    QGridLayout *layout = new QGridLayout(listWidget);
+    int screenWidth = listWidget->size().width() - 80;
 
     QFont font;
     font.setPointSize(30);
-    for (int i = 0; i < 1000; ++i) {
-      QLabel *label = new QLabel(QString("Item %1").arg(i), this);
-      label->setFont(font);
-      label->setFixedHeight(100);
-      layout->addWidget(label);
+
+    QFile file(":/assets/delegates.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      qDebug() << "Error: Could not open delegates.txt";
+      return;
     }
+
+    QTextStream in(&file);
+    QPixmap pixmap(":/assets/avatar.png"); // Ensure correct path
+    int i = 0;
+    while (!in.atEnd()) {
+      QString name = in.readLine().trimmed();
+      if (name.isEmpty())
+        continue;
+
+      QWidget *itemWidget = new QWidget();
+      itemWidget->setObjectName("itemWidget");
+      itemWidget->setFixedWidth(screenWidth);
+      QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
+
+      QLabel *imageLabel = new QLabel(this);
+      imageLabel->setPixmap(
+          pixmap.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+      QLabel *textLabel = new QLabel(name, this);
+      textLabel->setFont(font);
+      textLabel->setFixedHeight(100);
+
+      itemLayout->addWidget(imageLabel);
+      itemLayout->addWidget(textLabel);
+      itemWidget->setLayout(itemLayout);
+
+      layout->addWidget(itemWidget, i / 2, i % 2); // Two columns
+      itemWidget->setStyleSheet("#itemWidget { border: 2px solid black; "
+                                "background-color: white; padding: 5px; }");
+
+      ++i;
+    }
+    file.close();
 
     listWidget->setLayout(layout);
     scrollArea->setWidget(listWidget);
     scrollArea->setWidgetResizable(true);
     mainLayout->addWidget(scrollArea);
     setLayout(mainLayout);
+
     QScroller::grabGesture(scrollArea->viewport(), QScroller::TouchGesture);
   }
 };
@@ -129,7 +186,7 @@ public:
 
     QTabWidget *tabs = new QTabWidget(this);
     tabs->setFont(tabFont);
-    tabs->addTab(new WebView(), "Web Browser");
+    tabs->addTab(new LargeList(), "Large List");
     // first check if sample.pdf exists in current directory, then try
     // /home/root
     if (QFile::exists("sample.pdf"))
@@ -137,7 +194,7 @@ public:
     else
       tabs->addTab(new PdfViewer("/home/root/sample.pdf"), "PDF Viewer");
 
-    tabs->addTab(new LargeList(), "Large List");
+    tabs->addTab(new WebView(), "Web Browser");
     tabs->addTab(new VideoPlayer(), "Video Player");
 
     setCentralWidget(tabs);
