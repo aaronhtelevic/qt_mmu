@@ -39,7 +39,11 @@ public:
     pdfDocument->load(pdfPath);
 
     pdfLabel = new QLabel(this);
-    layout->addWidget(pdfLabel);
+    QScrollArea *scrollArea = new QScrollArea(this);
+    pdfLabel = new QLabel();
+    scrollArea->setWidget(pdfLabel);
+    scrollArea->setWidgetResizable(true);
+    layout->addWidget(scrollArea);
 
     QHBoxLayout *navLayout = new QHBoxLayout();
     prevButton = new QPushButton("Previous", this);
@@ -188,7 +192,6 @@ public:
     tabs->setFont(tabFont);
     tabs->addTab(new LargeList(), "Large List");
     // first check if sample.pdf exists in current directory, then try
-    // /home/root
     if (QFile::exists("sample.pdf"))
       tabs->addTab(new PdfViewer("sample.pdf"), "PDF Viewer");
     else
