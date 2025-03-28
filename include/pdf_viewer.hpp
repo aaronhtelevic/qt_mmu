@@ -16,6 +16,7 @@ public:
 
 private slots:
   void startAutoScroll();
+  void autoScroll();
   void showPreviousPage();
   void showNextPage();
   void zoomIn();

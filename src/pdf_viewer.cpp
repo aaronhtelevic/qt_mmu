@@ -47,6 +47,13 @@ PdfViewer::PdfViewer(const QString &pdfPath, QWidget *parent)
 }
 
 void PdfViewer::startAutoScroll() {
+  // go to first page
+  currentPage = 0;
+  updatePage();
+  autoScroll();
+}
+
+void PdfViewer::autoScroll() {
   if (currentPage < pdfDocument->pageCount() - 1) {
     auto startTime = std::chrono::high_resolution_clock::now();
     connect(this, &PdfViewer::pageRendered, this, [this, startTime]() {
@@ -58,12 +65,11 @@ void PdfViewer::startAutoScroll() {
 
       disconnect(this, &PdfViewer::pageRendered, nullptr, nullptr);
       showNextPage();
-      startAutoScroll();
+      autoScroll();
     });
     updatePage();
   }
 }
-
 void PdfViewer::showPreviousPage() {
   if (currentPage > 0) {
     --currentPage;
