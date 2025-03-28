@@ -1,3 +1,4 @@
+#include "pdf_viewer.hpp"
 #include "video_player.hpp"
 #include <QApplication>
 #include <QFile>
@@ -26,96 +27,6 @@ public:
     webView->setUrl(QUrl("http://localhost:8085"));
     layout->addWidget(webView);
   }
-};
-
-class PdfViewer : public QWidget {
-public:
-  PdfViewer(const QString &pdfPath, QWidget *parent = nullptr)
-      : QWidget(parent), currentPage(0), zoomFactor(1.0) {
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    setLayout(layout);
-
-    pdfDocument = new QPdfDocument(this);
-    pdfDocument->load(pdfPath);
-
-    pdfLabel = new QLabel(this);
-    QScrollArea *scrollArea = new QScrollArea(this);
-    pdfLabel = new QLabel();
-    scrollArea->setWidget(pdfLabel);
-    scrollArea->setWidgetResizable(true);
-    layout->addWidget(scrollArea);
-
-    QHBoxLayout *navLayout = new QHBoxLayout();
-    prevButton = new QPushButton("Previous", this);
-    nextButton = new QPushButton("Next", this);
-    zoomInButton = new QPushButton("Zoom In", this);
-    zoomOutButton = new QPushButton("Zoom Out", this);
-
-    connect(prevButton, &QPushButton::clicked, this,
-            &PdfViewer::showPreviousPage);
-    connect(nextButton, &QPushButton::clicked, this, &PdfViewer::showNextPage);
-    connect(zoomInButton, &QPushButton::clicked, this, &PdfViewer::zoomIn);
-    connect(zoomOutButton, &QPushButton::clicked, this, &PdfViewer::zoomOut);
-
-    navLayout->addWidget(prevButton);
-    navLayout->addWidget(nextButton);
-    navLayout->addWidget(zoomInButton);
-    navLayout->addWidget(zoomOutButton);
-
-    layout->addLayout(navLayout);
-
-    updatePage();
-    updateButtons();
-  }
-
-private slots:
-  void showPreviousPage() {
-    if (currentPage > 0) {
-      --currentPage;
-      updatePage();
-      updateButtons();
-    }
-  }
-
-  void showNextPage() {
-    if (currentPage < pdfDocument->pageCount() - 1) {
-      ++currentPage;
-      updatePage();
-      updateButtons();
-    }
-  }
-
-  void zoomIn() {
-    zoomFactor *= 1.2;
-    updatePage();
-  }
-
-  void zoomOut() {
-    zoomFactor /= 1.2;
-    updatePage();
-  }
-
-private:
-  void updatePage() {
-    QSize originalSize = pdfDocument->pagePointSize(currentPage).toSize();
-    QSize scaledSize = originalSize * zoomFactor;
-    QImage image = pdfDocument->render(currentPage, scaledSize);
-    pdfLabel->setPixmap(QPixmap::fromImage(image));
-  }
-
-  void updateButtons() {
-    prevButton->setEnabled(currentPage > 0);
-    nextButton->setEnabled(currentPage < pdfDocument->pageCount() - 1);
-  }
-
-  QPdfDocument *pdfDocument;
-  QLabel *pdfLabel;
-  QPushButton *prevButton;
-  QPushButton *nextButton;
-  QPushButton *zoomInButton;
-  QPushButton *zoomOutButton;
-  int currentPage;
-  double zoomFactor;
 };
 
 class LargeList : public QWidget {

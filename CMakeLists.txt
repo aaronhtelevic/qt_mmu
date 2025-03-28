@@ -16,10 +16,12 @@ message(STATUS "Qt6Core_DIR: ${Qt6Core_DIR}")
 
 set(HEADERS
     include/video_player.hpp
+    include/pdf_viewer.hpp
 )
 set(SOURCES
     src/main.cpp
     src/video_player.cpp
+    src/pdf_viewer.cpp
 )
 
 add_executable(QtMultimediaApp ${HEADERS} ${SOURCES})
