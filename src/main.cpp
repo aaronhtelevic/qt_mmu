@@ -49,6 +49,10 @@ public:
 
     QTextStream in(&file);
     QPixmap pixmap(":/assets/avatar.png"); // Ensure correct path
+
+    QPixmap scaledPixmap =
+        pixmap.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
     int i = 0;
     while (!in.atEnd()) {
       QString name = in.readLine().trimmed();
@@ -60,14 +64,12 @@ public:
       itemWidget->setFixedWidth(screenWidth);
       QHBoxLayout *itemLayout = new QHBoxLayout(itemWidget);
 
-      QLabel *imageLabel = new QLabel(this);
-      imageLabel->setPixmap(
-          pixmap.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
       QLabel *textLabel = new QLabel(name, this);
       textLabel->setFont(font);
       textLabel->setFixedHeight(100);
 
+      QLabel *imageLabel = new QLabel(this);
+      imageLabel->setPixmap(scaledPixmap);
       itemLayout->addWidget(imageLabel);
       itemLayout->addWidget(textLabel);
       itemWidget->setLayout(itemLayout);
