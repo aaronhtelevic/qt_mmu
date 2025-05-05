@@ -19,12 +19,14 @@
 
 class WebView : public QWidget {
 public:
-  WebView(QWidget *parent = nullptr) : QWidget(parent) {
+  WebView(const QString &url = "http://localhost:8085",
+          QWidget *parent = nullptr)
+      : QWidget(parent) {
     QVBoxLayout *layout = new QVBoxLayout(this);
     setLayout(layout);
 
     QWebEngineView *webView = new QWebEngineView(this);
-    webView->setUrl(QUrl("http://localhost:8085"));
+    webView->setUrl(QUrl(url));
     layout->addWidget(webView);
   }
 };
@@ -94,9 +96,8 @@ public:
 
 class MainWindow : public QMainWindow {
 public:
-  MainWindow() {
+  MainWindow(const QString &webViewUrl) {
     setWindowTitle("Qt C++ Multimedia App");
-    // should be fullscreen
     setWindowState(Qt::WindowMaximized);
     QFont tabFont;
     tabFont.setPointSize(20);
@@ -104,13 +105,12 @@ public:
     QTabWidget *tabs = new QTabWidget(this);
     tabs->setFont(tabFont);
     tabs->addTab(new LargeList(), "Large List");
-    // first check if sample.pdf exists in current directory, then try
     if (QFile::exists("sample.pdf"))
       tabs->addTab(new PdfViewer("sample.pdf"), "PDF Viewer");
     else
       tabs->addTab(new PdfViewer("/home/root/sample.pdf"), "PDF Viewer");
 
-    tabs->addTab(new WebView(), "Web Browser");
+    tabs->addTab(new WebView(webViewUrl), "Web Browser");
     tabs->addTab(new VideoPlayer(), "Video Player");
 
     setCentralWidget(tabs);
@@ -119,7 +119,8 @@ public:
 
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
-  MainWindow mainWindow;
+  QString webViewUrl = (argc > 1) ? argv[1] : "http://localhost:8085";
+  MainWindow mainWindow(webViewUrl);
   mainWindow.show();
   return app.exec();
 }
